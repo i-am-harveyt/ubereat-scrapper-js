@@ -1,0 +1,19 @@
+{
+  "name": "scrapingjs",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "fetchShop.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "req": "node sendReq.js",
+    "near": "node getNearShop.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrent": "^0.3.2",
+    "danfojs-node": "^1.1.2"
+  }
+}
