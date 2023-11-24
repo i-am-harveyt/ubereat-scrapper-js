@@ -18,6 +18,7 @@ async function main() {
 
 	// 確保輸出目錄存在
 	mkdirSync(PATH, { recursive: true });
+	mkdirSync("./cookies", { recursive: true });
 
 	// read central location information
 	const centerStream = await readCSV("inputCentral/demo.csv", {
