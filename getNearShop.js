@@ -23,7 +23,8 @@ export default async function getNearShop(
 		longitude: [],
 		anchor_latitude: [],
 		anchor_longitude: [],
-		score: [],
+		score_breakdown: [],
+		score_total: [],
 		rating: [],
 		orderable: [],
 	};
@@ -37,9 +38,7 @@ export default async function getNearShop(
 
 	const fileNameStr = `../uber_data/shopLst/${TODAY}/shopLst_${lat}_${lng}_${TODAY}.csv`;
 
-	await new Promise((resolve) =>
-		setTimeout(resolve, Math.random() * 3000)
-	);
+	await new Promise((resolve) => setTimeout(resolve, Math.random() * 3000));
 	let get = await fetch(
 		"https://www.ubereats.com/tw/feed?diningMode=DELIVERY",
 		true
@@ -52,9 +51,7 @@ export default async function getNearShop(
 		roundCount += 1;
 		console.log(roundCount, offset);
 		// wait for a couple seconds
-		await new Promise((resolve) =>
-			setTimeout(resolve, Math.random() * 1200)
-		);
+		await new Promise((resolve) => setTimeout(resolve, Math.random() * 1200));
 
 		// send the request
 		let response = await sendReq(cookie, lat, lng, offset, PAGE_SIZE);
@@ -67,8 +64,7 @@ export default async function getNearShop(
 			let items = (await response.json())["data"]["feedItems"];
 			let stores = [];
 			for (const e of items)
-				if (e.type === "REGULAR_STORE")
-					stores.push(e["store"]);
+				if (e.type === "REGULAR_STORE") stores.push(e["store"]);
 
 			if (!stores || stores.length < 1) break;
 			offset += stores.length;
@@ -99,12 +95,17 @@ export default async function getNearShop(
 					result.rating.push(NaN);
 				}
 
-        // the scores seems do something on the sorting order
+				// the scores seems do something on the sorting order
 				try {
 					let score = e["tracking"]["storePayload"]["score"];
-					result.score.push(`\"${JSON.stringify(score)}\"`);
+					result.score_breakdown.push(
+						Buffer.from(
+							JSON.stringify(Object.entries(score["breakdown"]))
+						).toString("base64")
+					);
+					result.score_total.push(score["total"]);
 				} catch (e) {
-					result.score.push(NaN);
+					result.score_breakdown.push(NaN);
 				}
 
 				try {
