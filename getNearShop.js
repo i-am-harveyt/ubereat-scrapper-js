@@ -100,7 +100,7 @@ export default async function getNearShop(
 					let score = e["tracking"]["storePayload"]["score"];
 					result.score_breakdown.push(
 						Buffer.from(
-							JSON.stringify(Object.entries(score["breakdown"]))
+							JSON.stringify(score["breakdown"])
 						).toString("base64")
 					);
 					result.score_total.push(score["total"]);
