@@ -5,10 +5,7 @@
   "type": "module",
   "main": "fetchShop.js",
   "scripts": {
-    "start": "node main.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "req": "node sendReq.js",
-    "near": "node getNearShop.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",

@@ -7,21 +7,15 @@ async function main() {
 	const date = new Date();
 	const TODAY = `${date.getFullYear()}-${date.getMonth() + 1
 		}-${date.getDate()}`;
-//	const oklist = [];
-//	const statusFailDict = {
-//		lat: [],
-//		lng: [],
-//	};
-//	const failConvertlist = [];
 	
-	const PATH = `../uber_data/shopLst/${TODAY}`;
+	const PATH = `../../../uber_data/shopLst/${TODAY}`;
 
 	// 確保輸出目錄存在
 	mkdirSync(PATH, { recursive: true });
 	mkdirSync("./cookies", { recursive: true });
 
 	// read central location information
-	const centerStream = await readCSV("inputCentral/demo.csv", {
+	const centerStream = await readCSV("../../inputCentral/demo.csv", {
 		header: true,
 	});
 	const centerLst = centerStream.loc({

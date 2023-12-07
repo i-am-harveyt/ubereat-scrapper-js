@@ -1,6 +1,5 @@
 import sendReq from "./sendReq.js";
 import { DataFrame } from "danfojs-node";
-import findValues from "./findValues.js";
 import { Cookie } from "./Cookie.js";
 
 /**
@@ -36,7 +35,7 @@ export default async function getNearShop(
 
 	let offset = 0;
 
-	const fileNameStr = `../uber_data/shopLst/${TODAY}/shopLst_${lat}_${lng}_${TODAY}.csv`;
+	const fileNameStr = `../../../uber_data/shopLst/${TODAY}/shopLst_${lat}_${lng}_${TODAY}.csv`;
 
 	await new Promise((resolve) => setTimeout(resolve, Math.random() * 3000));
 	let get = await fetch(
@@ -49,7 +48,6 @@ export default async function getNearShop(
 
 	while (true) {
 		roundCount += 1;
-		console.log(roundCount, offset);
 		// wait for a couple seconds
 		await new Promise((resolve) => setTimeout(resolve, Math.random() * 1200));
 
