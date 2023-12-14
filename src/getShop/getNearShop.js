@@ -10,7 +10,6 @@ import { Cookie } from "./Cookie.js";
  * @param {number} lng longitude
  */
 export default async function getNearShop(
-	cookie,
 	date,
 	lat = 25.0173405,
 	lng = 121.5397518
@@ -27,6 +26,8 @@ export default async function getNearShop(
 		rating: [],
 		orderable: [],
 	};
+	let cookie = new Cookie();
+	cookie.init();
 
 	const PAGE_SIZE = 80;
 	const TODAY = `${date.getFullYear()}-${
