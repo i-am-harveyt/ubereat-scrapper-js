@@ -2,7 +2,7 @@ import getNearShop from "./getNearShop.js";
 import { readCSV } from "danfojs-node";
 import { mkdirSync } from "fs";
 
-const WORKER_LIM = 5;
+const WORKER_LIM = 3;
 
 async function wait(time) {
   return new Promise((resolve) => setTimeout(() => resolve(1), time));

@@ -41,7 +41,7 @@ export default function extractData(data, now, latitude, longitude) {
   try {
     let loc = data.location;
     result.address = `"${loc.address}"`;
-    result.postalCode = loc.postalCode ? loc.postalCode : NaN;
+    result.postalCode = loc.postalCode ? `"${loc.postalCode}"` : NaN;
     result.city = `"${loc.city}"`;
     result.shopLat = loc.latitude;
     result.shopLng = loc.longitude;
