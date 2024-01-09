@@ -16,7 +16,7 @@ export default async function sendReq(
 	pageSize = 80
 ) {
 	try {
-		return await fetch(
+		let ret = await fetch(
 			"https://www.ubereats.com/_p/api/getFeedV1?localeCode=tw",
 			{
 				headers: {
@@ -42,6 +42,8 @@ export default async function sendReq(
 				method: "POST",
 			}
 		);
+		console.log(ret.status)
+		return ret;
 	} catch (e) {
 		console.error(e);
 	}
