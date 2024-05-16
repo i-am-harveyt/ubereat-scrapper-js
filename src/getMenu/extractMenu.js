@@ -11,6 +11,7 @@ export default function getMenuData(data) {
 		product: [],
 		description: [],
 		price: [],
+		preDiscountPirce: [],
 		isSoldOut: [],
 		accessibilityText: [],
 	};
@@ -24,6 +25,19 @@ export default function getMenuData(data) {
 				? item.priceTagline.accessibilityText
 				: NaN
 		);
+
+		try {
+			const pattern = /\$\d+\.\d+/g;
+			const prices = accessibilityText.match(pattern);
+			const preDiscountPrice = prices[prices.length - 1];
+			result.preDiscountPirce.push(
+				parseFloat(preDiscountPrice.replace("$", ""))
+			);
+		} catch (e) {
+			console.error(`Error occured when parsing ${accessibilityText}`);
+			result.preDiscountPirce.push(NaN);
+		}
+
 		result.isSoldOut.push(
 			typeof item.isSoldOut === "boolean" ? item.isSoldOut : NaN
 		);
