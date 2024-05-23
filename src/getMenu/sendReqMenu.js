@@ -18,7 +18,6 @@ export default async function sendReqMenu(
     return await fetch(
       "https://www.ubereats.com/_p/api/getStoreV1?localeCode=tw",
       {
-        verbose: true,
         headers: {
           accept: "*/*",
           "accept-language": "en-US,en;q=0.9",

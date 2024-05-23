@@ -1,6 +1,7 @@
 import sendReq from "./sendReq.js";
 import { DataFrame } from "danfojs-node";
 import { Cookie } from "./Cookie.js";
+import { mkdirSync, writeFileSync } from "fs";
 
 /**
  * get the restaurants nearby the given latitude and longitude
@@ -58,9 +59,22 @@ export default async function getNearShop(
 
 		// update cookies
 		cookie.updateCookies(response.headers.getSetCookie().join("; "));
+		const data = await response.json();
+
+		// store json
+		try {
+			const jsonPath = `../../../uber_data/shopLst/json/${TODAY}/`;
+			mkdirSync(jsonPath, { recursive: true });
+			writeFileSync(
+				`${jsonPath}/${lat}-${lng}-p-${offset}.json`,
+				JSON.stringify(data)
+			);
+		} catch (error) {
+			console.error(error);
+		}
 
 		try {
-			let items = (await response.json())["data"]["feedItems"];
+			let items = data["data"]["feedItems"];
 			let stores = [];
 			for (const e of items)
 				if (e.type === "REGULAR_STORE") stores.push(e["store"]);
@@ -98,9 +112,7 @@ export default async function getNearShop(
 				try {
 					let score = e["tracking"]["storePayload"]["score"];
 					result.score_breakdown.push(
-						Buffer.from(
-							JSON.stringify(score["breakdown"])
-						).toString("base64")
+						Buffer.from(JSON.stringify(score["breakdown"])).toString("base64")
 					);
 					result.score_total.push(score["total"]);
 				} catch (e) {
