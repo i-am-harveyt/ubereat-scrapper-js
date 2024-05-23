@@ -28,13 +28,13 @@ export default function getMenuData(data) {
 
 		try {
 			const pattern = /\$\d+\.\d+/g;
-			const prices = accessibilityText.match(pattern);
+			const prices = item.priceTagline.accessibilityText.match(pattern);
 			const preDiscountPrice = prices[prices.length - 1];
 			result.preDiscountPirce.push(
 				parseFloat(preDiscountPrice.replace("$", ""))
 			);
 		} catch (e) {
-			console.error(`Error occured when parsing ${accessibilityText}`);
+			console.error(`Error occured when parsing ${item.priceTagline.accessibilityText}`);
 			result.preDiscountPirce.push(NaN);
 		}
 

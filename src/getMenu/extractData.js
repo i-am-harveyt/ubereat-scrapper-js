@@ -105,7 +105,7 @@ export default function extractData(data, now, latitude, longitude) {
       "base64",
     );
   } catch (e) {
-    // console.error(`${data.uuid} has no menu`);
+    console.error(e);
   }
 
   return result;
