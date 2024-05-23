@@ -62,16 +62,16 @@ export default async function getNearShop(
 		const data = await response.json();
 
 		// store json
-		try {
-			const jsonPath = `../../../uber_data/shopLst/json/${TODAY}/`;
-			mkdirSync(jsonPath, { recursive: true });
-			writeFileSync(
-				`${jsonPath}/${lat}-${lng}-p-${offset}.json`,
-				JSON.stringify(data)
-			);
-		} catch (error) {
-			console.error(error);
-		}
+		// try {
+		// 	const jsonPath = `../../../uber_data/shopLst/json/${TODAY}/`;
+		// 	mkdirSync(jsonPath, { recursive: true });
+		// 	writeFileSync(
+		// 		`${jsonPath}/${lat}-${lng}-p-${offset}.json`,
+		// 		JSON.stringify(data)
+		// 	);
+		// } catch (error) {
+		// 	console.error(error);
+		// }
 
 		try {
 			let items = data["data"]["feedItems"];
