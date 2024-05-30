@@ -32,14 +32,14 @@ export default async function getMenu(
 	try {
 		let response = await sendReqMenu(cookie, shopUuid, latitude, longitude);
 		const data = await response.json();
-		// data conversion
-		const jsonPath = `../../../uber_data/uber_menu/json/`;
-		const today = `${now.getMonth() + 1}-${now.getDate()}`;
-		mkdirSync(jsonPath, { recursive: true });
-		writeFileSync(
-			`${jsonPath}/${shopUuid}-${today}.json`,
-			JSON.stringify(data)
-		);
+		// write to json
+		// const jsonPath = `../../../uber_data/uber_menu/json/`;
+		// const today = `${now.getMonth() + 1}-${now.getDate()}`;
+		// mkdirSync(jsonPath, { recursive: true });
+		// writeFileSync(
+		// 	`${jsonPath}/${shopUuid}-${today}.json`,
+		// 	JSON.stringify(data)
+		// );
 		return extractData(data.data, now, latitude, longitude);
 	} catch (e) {
 		throw e;
