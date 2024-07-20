@@ -29,29 +29,15 @@ async function main() {
   }).values;
 
   let count = 1;
-  let worker_num = WORKER_LIM;
-  let line = 1;
-
   for (const loc of centerLst) {
-    /* multi-worker */
-    if (worker_num === 0) {
-      console.log(`${line++} ${loc} is waiting`);
-      await wait(10_000);
-      worker_num = WORKER_LIM;
-    }
-    worker_num--;
-
     console.log(`The ${count++}th location: (${loc[0]}, ${loc[1]})`);
     try {
-      // await getNearShop(date, loc[0], loc[1]);
-
       /* multi-worker */
-      getNearShop(date, loc[0], loc[1]);
+      await getNearShop(date, loc[0], loc[1]);
     } catch (e) {
       console.log(e);
     }
   }
-  await wait(10_000);
 
   // console.log("final number of resuarant in total: ", shopData.length);
   console.log("down shop catch");
