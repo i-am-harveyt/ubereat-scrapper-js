@@ -37,7 +37,7 @@ export default async function getMenu(
 		// const today = `${now.getMonth() + 1}-${now.getDate()}`;
 		// mkdirSync(jsonPath, { recursive: true });
 		// writeFileSync(
-		// 	`${jsonPath}/${shopUuid}-${today}.json`,
+		// 	`${jsonPath}/${latitude}_${longitude}_${shopUuid}-${today}.json`,
 		// 	JSON.stringify(data)
 		// );
 		return extractData(data.data, now, latitude, longitude);
