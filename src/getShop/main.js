@@ -39,7 +39,7 @@ async function main() {
 }
 
 try {
-  await main();
+  main();
 } catch (e) {
   console.log("Totally failed");
   console.error(e);
