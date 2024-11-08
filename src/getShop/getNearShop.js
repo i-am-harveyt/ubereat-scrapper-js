@@ -40,7 +40,7 @@ export default async function getNearShop(
 
   const fileNameStr = `../../../uber_data/shopLst/${TODAY}/shopLst_${lat}_${lng}_${TODAY}.csv`;
 
-  await new Promise((resolve) => setTimeout(resolve, Math.random() * 3000));
+  await new Promise((resolve) => setTimeout(resolve, Math.random() * 4000));
   let get = await fetch(
     "https://www.ubereats.com/tw/feed?diningMode=DELIVERY",
     true,
@@ -52,7 +52,7 @@ export default async function getNearShop(
   while (true) {
     roundCount += 1;
     // wait for a couple seconds
-    await new Promise((resolve) => setTimeout(resolve, Math.random() * 1200));
+    await new Promise((resolve) => setTimeout(resolve, Math.random() * 3000));
 
     // send the request
     let response = await sendReq(cookie, lat, lng, offset, PAGE_SIZE);

@@ -29,7 +29,7 @@ export default async function getMenu(
   let now = new Date();
 
   // fetch logic
-  await new Promise((resolve) => setTimeout(resolve, Math.random() * 2000));
+  await new Promise((resolve) => setTimeout(resolve, Math.random() * 3000));
   try {
     let response = await sendReqMenu(cookie, shopUuid, latitude, longitude);
     const data = await response.json();
