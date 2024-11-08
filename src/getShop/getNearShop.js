@@ -11,141 +11,144 @@ import { mkdirSync, writeFileSync } from "fs";
  * @param {number} lng longitude
  */
 export default async function getNearShop(
-	date,
-	lat = 25.0173405,
-	lng = 121.5397518
+  date,
+  lat = 25.0173405,
+  lng = 121.5397518,
+  grepJson,
 ) {
-	let result = {
-		storeUuid: [],
-		name: [],
-		latitude: [],
-		longitude: [],
-		anchor_latitude: [],
-		anchor_longitude: [],
-		score_breakdown: [],
-		score_total: [],
-		rating: [],
-		orderable: [],
-	};
-	let cookie = new Cookie();
-	cookie.init();
+  let result = {
+    storeUuid: [],
+    name: [],
+    latitude: [],
+    longitude: [],
+    anchor_latitude: [],
+    anchor_longitude: [],
+    score_breakdown: [],
+    score_total: [],
+    rating: [],
+    orderable: [],
+  };
+  let cookie = new Cookie();
+  cookie.init();
 
-	const PAGE_SIZE = 80;
-	const TODAY = `${date.getFullYear()}-${
-		date.getMonth() + 1
-	}-${date.getDate()}`;
+  const PAGE_SIZE = 80;
+  const TODAY = `${date.getFullYear()}-${
+    date.getMonth() + 1
+  }-${date.getDate()}`;
 
-	let offset = 0;
+  let offset = 0;
 
-	const fileNameStr = `../../../uber_data/shopLst/${TODAY}/shopLst_${lat}_${lng}_${TODAY}.csv`;
+  const fileNameStr = `../../../uber_data/shopLst/${TODAY}/shopLst_${lat}_${lng}_${TODAY}.csv`;
 
-	await new Promise((resolve) => setTimeout(resolve, Math.random() * 3000));
-	let get = await fetch(
-		"https://www.ubereats.com/tw/feed?diningMode=DELIVERY",
-		true
-	);
-	cookie.updateCookies(get.headers.getSetCookie().join("; "));
+  await new Promise((resolve) => setTimeout(resolve, Math.random() * 3000));
+  let get = await fetch(
+    "https://www.ubereats.com/tw/feed?diningMode=DELIVERY",
+    true,
+  );
+  cookie.updateCookies(get.headers.getSetCookie().join("; "));
 
-	let roundCount = 0;
+  let roundCount = 0;
 
-	while (true) {
-		roundCount += 1;
-		// wait for a couple seconds
-		await new Promise((resolve) => setTimeout(resolve, Math.random() * 1200));
+  while (true) {
+    roundCount += 1;
+    // wait for a couple seconds
+    await new Promise((resolve) => setTimeout(resolve, Math.random() * 1200));
 
-		// send the request
-		let response = await sendReq(cookie, lat, lng, offset, PAGE_SIZE);
-		if (!response) break;
+    // send the request
+    let response = await sendReq(cookie, lat, lng, offset, PAGE_SIZE);
+    if (!response) break;
 
-		// update cookies
-		cookie.updateCookies(response.headers.getSetCookie().join("; "));
-		const data = await response.json();
+    // update cookies
+    cookie.updateCookies(response.headers.getSetCookie().join("; "));
+    const data = await response.json();
 
-		// store json
-		// try {
-		// 	const jsonPath = `../../../uber_data/shopLst/json/${TODAY}/`;
-		// 	mkdirSync(jsonPath, { recursive: true });
-		// 	writeFileSync(
-		// 		`${jsonPath}/${lat}-${lng}-p-${offset}.json`,
-		// 		JSON.stringify(data)
-		// 	);
-		// } catch (error) {
-		// 	console.error(error);
-		// }
+    // store json
+    if (grepJson) {
+      try {
+        const jsonPath = `../../../uber_data/shopLst/json/${TODAY}/`;
+        mkdirSync(jsonPath, { recursive: true });
+        writeFileSync(
+          `${jsonPath}/${lat}-${lng}-p-${offset}.json`,
+          JSON.stringify(data),
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    }
 
-		try {
-			let items = data["data"]["feedItems"];
-			let stores = [];
-			for (const e of items)
-				if (e.type === "REGULAR_STORE") stores.push(e["store"]);
+    try {
+      let items = data["data"]["feedItems"];
+      let stores = [];
+      for (const e of items)
+        if (e.type === "REGULAR_STORE") stores.push(e["store"]);
 
-			if (!stores || stores.length < 1) break;
-			offset += stores.length;
+      if (!stores || stores.length < 1) break;
+      offset += stores.length;
 
-			for (const e of stores) {
-				try {
-					let uuid = e["storeUuid"];
-					let title = e["title"]["text"];
-					result.storeUuid.push(uuid);
-					result.name.push(`\"${title}\"`);
-				} catch (e) {
-					continue;
-				}
+      for (const e of stores) {
+        try {
+          let uuid = e["storeUuid"];
+          let title = e["title"]["text"];
+          result.storeUuid.push(uuid);
+          result.name.push(`\"${title}\"`);
+        } catch (e) {
+          continue;
+        }
 
-				try {
-					let mapMarker = e["mapMarker"];
-					result.latitude.push(mapMarker["latitude"]);
-					result.longitude.push(mapMarker["longitude"]);
-				} catch (e) {
-					result.latitude.push(NaN);
-					result.longitude.push(NaN);
-				}
+        try {
+          let mapMarker = e["mapMarker"];
+          result.latitude.push(mapMarker["latitude"]);
+          result.longitude.push(mapMarker["longitude"]);
+        } catch (e) {
+          result.latitude.push(NaN);
+          result.longitude.push(NaN);
+        }
 
-				try {
-					let rating = e["rating"]["text"];
-					result.rating.push(rating);
-				} catch (e) {
-					result.rating.push(NaN);
-				}
+        try {
+          let rating = e["rating"]["text"];
+          result.rating.push(rating);
+        } catch (e) {
+          result.rating.push(NaN);
+        }
 
-				// the scores seems do something on the sorting order
-				try {
-					let score = e["tracking"]["storePayload"]["score"];
-					result.score_breakdown.push(
-						Buffer.from(JSON.stringify(score["breakdown"])).toString("base64")
-					);
-					result.score_total.push(score["total"]);
-				} catch (e) {
-					result.score_breakdown.push(NaN);
-				}
+        // the scores seems do something on the sorting order
+        try {
+          let score = e["tracking"]["storePayload"]["score"];
+          result.score_breakdown.push(
+            Buffer.from(JSON.stringify(score["breakdown"])).toString("base64"),
+          );
+          result.score_total.push(score["total"]);
+        } catch (e) {
+          result.score_breakdown.push(NaN);
+        }
 
-				try {
-					let orderable = e["tracking"]["storePayload"]["isOrderable"];
-					result.orderable.push(orderable);
-				} catch (e) {
-					result.orderable.push(NaN);
-				}
-			}
-		} catch (error) {
-			console.error(error);
-			break;
-		}
-	}
+        try {
+          let orderable = e["tracking"]["storePayload"]["isOrderable"];
+          result.orderable.push(orderable);
+        } catch (e) {
+          result.orderable.push(NaN);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      break;
+    }
+  }
 
-	// report
-	console.log(lat, lng, "storeUuid num", result.storeUuid.length);
-	if (result.storeUuid.length === 0) return;
+  // report
+  console.log(lat, lng, "storeUuid num", result.storeUuid.length);
+  if (result.storeUuid.length === 0) return;
 
-	result.anchor_latitude = Array.from(
-		{ length: result.storeUuid.length },
-		() => lat
-	);
-	result.anchor_longitude = Array.from(
-		{ length: result.storeUuid.length },
-		() => lng
-	);
-	result.date = Array.from({ length: result.storeUuid.length }, () => TODAY);
-	let df = new DataFrame(result);
+  result.anchor_latitude = Array.from(
+    { length: result.storeUuid.length },
+    () => lat,
+  );
+  result.anchor_longitude = Array.from(
+    { length: result.storeUuid.length },
+    () => lng,
+  );
+  result.date = Array.from({ length: result.storeUuid.length }, () => TODAY);
+  let df = new DataFrame(result);
 
-	df.toCSV({ filePath: fileNameStr, header: true });
+  df.toCSV({ filePath: fileNameStr, header: true });
 }

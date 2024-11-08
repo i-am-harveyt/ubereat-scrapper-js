@@ -2,7 +2,6 @@ import getNearShop from "./getNearShop.js";
 import { readCSV } from "danfojs-node";
 import { mkdirSync } from "fs";
 
-
 async function main() {
   const date = new Date();
   const TODAY = `${date.getFullYear()}-${
@@ -28,7 +27,12 @@ async function main() {
     console.log(`The ${count++}th location: (${loc[0]}, ${loc[1]})`);
     try {
       /* multi-worker */
-      await getNearShop(date, loc[0], loc[1]);
+      await getNearShop(
+        date,
+        loc[0],
+        loc[1],
+        date.getDate() >= 10 && date.getDate() < 17,
+      );
     } catch (e) {
       console.log(e);
     }
