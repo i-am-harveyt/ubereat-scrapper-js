@@ -34,12 +34,12 @@ export default async function getMenu(
     let response = await sendReqMenu(cookie, shopUuid, latitude, longitude);
     const data = await response.json();
     // write to json
-    const jsonPath = `../../../uber_data/uber_menu/json/`;
     const today = `${now.getMonth() + 1}-${now.getDate()}`;
+    const jsonPath = `../../../uber_data/uber_menu/json/${today}`;
     if (grepJson) {
       mkdirSync(jsonPath, { recursive: true });
       writeFileSync(
-        `${jsonPath}/${latitude}_${longitude}_${shopUuid}-${today}.json`,
+        `${jsonPath}/${today}/${latitude}_${longitude}_${shopUuid}-${today}.json`,
         JSON.stringify(data),
       );
     }
