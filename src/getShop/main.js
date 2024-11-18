@@ -31,7 +31,7 @@ async function main() {
         date,
         loc[0],
         loc[1],
-        date.getDate() >= 10 && date.getDate() < 17,
+        date.getDate() == 10,
       );
     } catch (e) {
       console.log(e);
