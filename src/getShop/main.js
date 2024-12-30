@@ -1,6 +1,7 @@
 import getNearShop from "./getNearShop.js";
 import { readCSV } from "danfojs-node";
 import { mkdirSync } from "fs";
+import { exit } from "process";
 
 async function main() {
   const date = new Date();
@@ -18,21 +19,25 @@ async function main() {
   const centerStream = await readCSV("../../inputCentral/tw_points.csv", {
     header: true,
   });
-  const centerLst = centerStream.loc({
+  let centerLst = centerStream.loc({
     columns: ["newLat", "newLng"],
   }).values;
+  const newAnchors = await readCSV(
+    "../../inputCentral/new_anchors_filtered.csv",
+    {
+      header: true,
+    },
+  );
+  centerLst = centerLst.concat(newAnchors.loc({
+    columns: ["newLat", "newLng"],
+  }).values);
 
   let count = 1;
   for (const loc of centerLst) {
     console.log(`The ${count++}th location: (${loc[0]}, ${loc[1]})`);
     try {
       /* multi-worker */
-      await getNearShop(
-        date,
-        loc[0],
-        loc[1],
-        date.getDate() == 10,
-      );
+      await getNearShop(date, loc[0], loc[1], date.getDate() == 10);
     } catch (e) {
       console.log(e);
     }
