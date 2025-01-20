@@ -3,14 +3,13 @@ import { Cookie } from "./Cookie.js";
 import { mkdirSync, readdirSync } from "fs";
 import { readCSV } from "danfojs-node";
 import { DataFrame } from "danfojs-node";
-import { fileURLToPath } from "url";
+import { Logger } from "../lib/Logger.js";
+
+const date = new Date();
+const TODAY = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+const logger = new Logger(`./${TODAY}_menu.log`);
 
 async function main() {
-  const date = new Date();
-  const TODAY = `${date.getFullYear()}-${
-    date.getMonth() + 1
-  }-${date.getDate()}`;
-
   const PATH = `../../../uber_data/uber_menu/${TODAY}`;
 
   // 確保輸出目錄存在
@@ -31,7 +30,7 @@ async function main() {
     df = df.loc({
       columns: ["storeUuid", "name", "anchor_latitude", "anchor_longitude"],
     }).values;
-    console.log(`(${df[0][2]}, ${df[0][3]}): ${df.length} shops`);
+    logger.log(`(${df[0][2]}, ${df[0][3]}): ${df.length} shops`);
     for (const row of df) {
       try {
         stores.push(
@@ -61,10 +60,10 @@ async function main() {
             );
             break;
           } catch (er) {
-            console.error(er);
+            logger.error(er);
           }
         }
-        console.error(e);
+        logger.error(e);
       }
     }
     const result = new DataFrame(stores);
@@ -74,12 +73,11 @@ async function main() {
     });
   }
 
-  console.log("down shop catch");
+  logger.log("down shop catch");
 }
 
 try {
   main();
 } catch (e) {
-  console.log("Totally failed");
-  console.error(e);
+  logger.error(`Totally failed ${e}`);
 }

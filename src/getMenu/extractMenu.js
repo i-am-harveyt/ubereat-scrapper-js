@@ -1,48 +1,53 @@
+import { Logger } from "../lib/Logger";
+
 /**
  * Generates a menu object from the given data.
  *
  * @param {object} data - The data to extract the menu from.
+ * @param {Logger} logger
  * @return {object} - The generated menu object.
  */
-export default function getMenuData(data) {
-	const menu = extractMenu(data.catalogSectionsMap);
-	let result = {
-		uuid: [],
-		product: [],
-		description: [],
-		price: [],
-		preDiscountPirce: [],
-		isSoldOut: [],
-		accessibilityText: [],
-	};
-	for (const item of menu) {
-		result.uuid.push(item.uuid ? item.uuid : NaN);
-		result.product.push(item.title ? item.title : NaN);
-		result.description.push(item.itemDescription ? item.itemDescription : NaN);
-		result.price.push(item.price ? item.price / 100 : NaN);
-		result.accessibilityText.push(
-			item.priceTagline?.accessibilityText
-				? item.priceTagline.accessibilityText
-				: NaN
-		);
+export default function getMenuData(data, logger) {
+  const menu = extractMenu(data.catalogSectionsMap);
+  let result = {
+    uuid: [],
+    product: [],
+    description: [],
+    price: [],
+    preDiscountPirce: [],
+    isSoldOut: [],
+    accessibilityText: [],
+  };
+  for (const item of menu) {
+    result.uuid.push(item.uuid ? item.uuid : NaN);
+    result.product.push(item.title ? item.title : NaN);
+    result.description.push(item.itemDescription ? item.itemDescription : NaN);
+    result.price.push(item.price ? item.price / 100 : NaN);
+    result.accessibilityText.push(
+      item.priceTagline?.accessibilityText
+        ? item.priceTagline.accessibilityText
+        : NaN,
+    );
 
-		try {
-			const pattern = /\$\d+\.\d+/g;
-			const prices = item.priceTagline.accessibilityText.match(pattern);
-			const preDiscountPrice = prices[prices.length - 1];
-			result.preDiscountPirce.push(
-				parseFloat(preDiscountPrice.replace("$", ""))
-			);
-		} catch (e) {
-			console.error(`Error occured when parsing ${item.priceTagline.accessibilityText}`);
-			result.preDiscountPirce.push(NaN);
-		}
+    try {
+      const pattern = /\$\d+\.\d+/g;
+      const prices = item.priceTagline.accessibilityText.match(pattern);
+      const preDiscountPrice = prices[prices.length - 1];
+      result.preDiscountPirce.push(
+        parseFloat(preDiscountPrice.replace("$", "")),
+      );
+    } catch (e) {
+      logger.error(
+        `Error occured when parsing ${item.priceTagline.accessibilityText}`,
+      );
+      result.preDiscountPirce.push(NaN);
+    }
 
-		result.isSoldOut.push(
-			typeof item.isSoldOut === "boolean" ? item.isSoldOut : NaN
-		);
-	}
-	return result;
+    result.isSoldOut.push(
+      typeof item.isSoldOut === "boolean" ? item.isSoldOut : NaN,
+    );
+  }
+  return result;
 }
 
 /**
@@ -52,10 +57,10 @@ export default function getMenuData(data) {
  * @return {Array}
  */
 function extractMenu(catalogSectionsMap) {
-	const sections = Object.values(catalogSectionsMap);
-	let menuItems = [];
-	for (const section of sections) menuItems.push(...extractItems(section));
-	return menuItems.flat();
+  const sections = Object.values(catalogSectionsMap);
+  let menuItems = [];
+  for (const section of sections) menuItems.push(...extractItems(section));
+  return menuItems.flat();
 }
 
 /*
@@ -67,5 +72,5 @@ function extractMenu(catalogSectionsMap) {
  * @param {Array<Object>} section
  */
 function extractItems(section) {
-	return section.map((e) => Object.values(e.payload)[0].catalogItems);
+  return section.map((e) => Object.values(e.payload)[0].catalogItems);
 }
