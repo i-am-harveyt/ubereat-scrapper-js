@@ -1,19 +1,22 @@
 import getNearShop from "./getNearShop.js";
 import { readCSV } from "danfojs-node";
 import { mkdirSync } from "fs";
-import { exit } from "process";
+import { Logger } from "../lib/Logger.js";
+
+const date = new Date();
+const TODAY = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+const logger = new Logger(`./${TODAY}.log`);
 
 async function main() {
-  const date = new Date();
-  const TODAY = `${date.getFullYear()}-${
-    date.getMonth() + 1
-  }-${date.getDate()}`;
-
   const PATH = `../../../uber_data/shopLst/${TODAY}`;
 
   // 確保輸出目錄存在
-  mkdirSync(PATH, { recursive: true });
-  mkdirSync("./cookies", { recursive: true });
+  try {
+    mkdirSync(PATH, { recursive: true });
+    mkdirSync("./cookies", { recursive: true });
+  } catch (e) {
+    logger.error(e);
+  }
 
   // read central location information
   const centerStream = await readCSV("../../inputCentral/tw_points.csv", {
@@ -28,28 +31,25 @@ async function main() {
       header: true,
     },
   );
-  centerLst = centerLst.concat(newAnchors.loc({
-    columns: ["newLat", "newLng"],
-  }).values);
+  centerLst = centerLst.concat(
+    newAnchors.loc({
+      columns: ["newLat", "newLng"],
+    }).values,
+  );
 
-  let count = 1;
   for (const loc of centerLst) {
-    console.log(`The ${count++}th location: (${loc[0]}, ${loc[1]})`);
     try {
-      /* multi-worker */
-      await getNearShop(date, loc[0], loc[1], date.getDate() == 10);
+      await getNearShop(TODAY, loc[0], loc[1], date.getDate() == 10, logger);
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     }
   }
 
-  // console.log("final number of resuarant in total: ", shopData.length);
-  console.log("down shop catch");
+  logger.log("down shop catch");
 }
 
 try {
   main();
 } catch (e) {
-  console.log("Totally failed");
-  console.error(e);
+  logger.error("Totally failed");
 }
