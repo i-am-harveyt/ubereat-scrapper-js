@@ -2,19 +2,22 @@ import sendReq from "./sendReq.js";
 import { DataFrame } from "danfojs-node";
 import { Cookie } from "./Cookie.js";
 import { mkdirSync, writeFileSync } from "fs";
+import { Logger } from "../lib/Logger.js";
 
 /**
  * get the restaurants nearby the given latitude and longitude
- * @param {Cookie} cookie
- * @param {Date} date the date object of today
+ * @param {string} date today's string
  * @param {number} lat latitude
  * @param {number} lng longitude
+ * @param {boolean} saveJson is should we save a json file in this run
+ * @param {Logger} logger the logger used to logging
  */
 export default async function getNearShop(
   date,
   lat = 25.0173405,
   lng = 121.5397518,
-  grepJson,
+  saveJson,
+  logger,
 ) {
   let result = {
     storeUuid: [],
@@ -32,13 +35,10 @@ export default async function getNearShop(
   cookie.init();
 
   const PAGE_SIZE = 80;
-  const TODAY = `${date.getFullYear()}-${
-    date.getMonth() + 1
-  }-${date.getDate()}`;
 
   let offset = 0;
 
-  const fileNameStr = `../../../uber_data/shopLst/${TODAY}/shopLst_${lat}_${lng}_${TODAY}.csv`;
+  const fileNameStr = `../../../uber_data/shopLst/${date}/shopLst_${lat}_${lng}_${date}.csv`;
 
   await new Promise((resolve) => setTimeout(resolve, Math.random() * 4000));
   let get = await fetch(
@@ -55,7 +55,7 @@ export default async function getNearShop(
     await new Promise((resolve) => setTimeout(resolve, Math.random() * 3000));
 
     // send the request
-    let response = await sendReq(cookie, lat, lng, offset, PAGE_SIZE);
+    let response = await sendReq(cookie, lat, lng, offset, PAGE_SIZE, logger);
     if (!response) break;
 
     // update cookies
@@ -63,16 +63,16 @@ export default async function getNearShop(
     const data = await response.json();
 
     // store json
-    if (grepJson) {
+    if (saveJson) {
       try {
-        const jsonPath = `../../../uber_data/shopLst/json/${TODAY}/`;
+        const jsonPath = `../../../uber_data/shopLst/json/${date}/`;
         mkdirSync(jsonPath, { recursive: true });
         writeFileSync(
           `${jsonPath}/${lat}-${lng}-p-${offset}.json`,
           JSON.stringify(data),
         );
       } catch (error) {
-        console.error(error);
+        logger.error(error);
       }
     }
 
@@ -85,10 +85,10 @@ export default async function getNearShop(
       if (!stores || stores.length < 1) break;
       offset += stores.length;
 
-      for (const e of stores) {
+      for (const store of stores) {
         try {
-          let uuid = e["storeUuid"];
-          let title = e["title"]["text"];
+          let uuid = store["storeUuid"];
+          let title = store["title"]["text"];
           result.storeUuid.push(uuid);
           result.name.push(`\"${title}\"`);
         } catch (e) {
@@ -96,7 +96,7 @@ export default async function getNearShop(
         }
 
         try {
-          let mapMarker = e["mapMarker"];
+          let mapMarker = store["mapMarker"];
           result.latitude.push(mapMarker["latitude"]);
           result.longitude.push(mapMarker["longitude"]);
         } catch (e) {
@@ -105,7 +105,7 @@ export default async function getNearShop(
         }
 
         try {
-          let rating = e["rating"]["text"];
+          let rating = store["rating"]["text"];
           result.rating.push(rating);
         } catch (e) {
           result.rating.push(NaN);
@@ -113,7 +113,7 @@ export default async function getNearShop(
 
         // the scores seems do something on the sorting order
         try {
-          let score = e["tracking"]["storePayload"]["score"];
+          let score = store["tracking"]["storePayload"]["score"];
           result.score_breakdown.push(
             Buffer.from(JSON.stringify(score["breakdown"])).toString("base64"),
           );
@@ -123,20 +123,20 @@ export default async function getNearShop(
         }
 
         try {
-          let orderable = e["tracking"]["storePayload"]["isOrderable"];
+          let orderable = store["tracking"]["storePayload"]["isOrderable"];
           result.orderable.push(orderable);
         } catch (e) {
           result.orderable.push(NaN);
         }
       }
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       break;
     }
   }
 
   // report
-  console.log(lat, lng, "storeUuid num", result.storeUuid.length);
+  logger.info(`(${lat},${lng}) ${result.storeUuid.length}`);
   if (result.storeUuid.length === 0) return;
 
   result.anchor_latitude = Array.from(
@@ -147,8 +147,6 @@ export default async function getNearShop(
     { length: result.storeUuid.length },
     () => lng,
   );
-  result.date = Array.from({ length: result.storeUuid.length }, () => TODAY);
-  let df = new DataFrame(result);
-
-  df.toCSV({ filePath: fileNameStr, header: true });
+  result.date = Array.from({ length: result.storeUuid.length }, () => date);
+  new DataFrame(result).toCSV({ filePath: fileNameStr, header: true });
 }
