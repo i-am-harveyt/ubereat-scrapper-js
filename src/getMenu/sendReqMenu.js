@@ -1,4 +1,5 @@
 import { Cookie } from "../getShop/Cookie";
+import { Logger } from "../lib/Logger";
 
 /**
  * This function is used to send request and get response
@@ -6,6 +7,7 @@ import { Cookie } from "../getShop/Cookie";
  * @param {string} shopUuid
  * @param {number} latitude
  * @param {number} longitude
+ * @param {Logger} logger
  * @returns Promise<Response> | boolean
  */
 export default async function sendReqMenu(
@@ -13,6 +15,7 @@ export default async function sendReqMenu(
   shopUuid,
   latitude,
   longitude,
+  logger,
 ) {
   try {
     return await fetch(
@@ -41,7 +44,7 @@ export default async function sendReqMenu(
       },
     );
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     throw e;
   }
 }

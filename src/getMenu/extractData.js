@@ -1,3 +1,4 @@
+import { Logger } from "../lib/Logger.js";
 import getMenuData from "./extractMenu.js";
 
 /**
@@ -6,8 +7,9 @@ import getMenuData from "./extractMenu.js";
  * @param {Date} now
  * @param {number} latitude
  * @param {number} longitude
+ * @param {Logger} logger
  */
-export default function extractData(data, now, latitude, longitude) {
+export default function extractData(data, now, latitude, longitude, logger) {
   // setup result
   let result = {
     shopCode: NaN,
@@ -101,11 +103,11 @@ export default function extractData(data, now, latitude, longitude) {
   // menu
   try {
     // encoded as base64
-    result.menu = Buffer.from(JSON.stringify(getMenuData(data))).toString(
+    result.menu = Buffer.from(JSON.stringify(getMenuData(data, logger))).toString(
       "base64",
     );
   } catch (e) {
-    console.error(e);
+    logger.error(e);
   }
 
   return result;
