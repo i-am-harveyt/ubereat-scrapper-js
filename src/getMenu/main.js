@@ -13,7 +13,9 @@ async function main() {
   const PATH = `../../../uber_data/uber_menu/${TODAY}`;
 
   // 確保輸出目錄存在
-  mkdirSync(PATH, { recursive: true });
+  try {
+    mkdirSync(PATH, { recursive: true });
+  } catch (e) {}
 
   // read shopinformation
   const locationPath = `../../../uber_data/shopLst/${TODAY}`;
@@ -25,13 +27,15 @@ async function main() {
   cookie.init();
 
   for (const location of locationLst) {
+    logger.info(location);
     let stores = [];
     let df = await readCSV(`${locationPath}/${location}`);
     df = df.loc({
       columns: ["storeUuid", "name", "anchor_latitude", "anchor_longitude"],
     }).values;
-    logger.log(`(${df[0][2]}, ${df[0][3]}): ${df.length} shops`);
+    logger.info(`(${df[0][2]}, ${df[0][3]}): ${df.length} shops`);
     for (const row of df) {
+      logger.info(row);
       try {
         stores.push(
           await getMenu(
@@ -41,6 +45,7 @@ async function main() {
             row[2],
             row[3],
             date.getDate() >= 10 && date.getDate() < 17,
+            logger,
           ),
         );
       } catch (e) {
@@ -73,7 +78,7 @@ async function main() {
     });
   }
 
-  logger.log("down shop catch");
+  logger.info("down shop catch");
 }
 
 try {
