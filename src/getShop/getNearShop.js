@@ -1,5 +1,5 @@
 import sendReq from "./sendReq.js";
-import { DataFrame } from "danfojs-node";
+import { DataFrame } from "nodejs-polars";
 import { Cookie } from "./Cookie.js";
 import { mkdirSync, writeFileSync } from "fs";
 import { Logger } from "../lib/Logger.js";
@@ -148,5 +148,5 @@ export default async function getNearShop(
     () => lng,
   );
   result.date = Array.from({ length: result.storeUuid.length }, () => date);
-  new DataFrame(result).toCSV({ filePath: fileNameStr, header: true });
+  DataFrame(result).writeCSV(fileNameStr);
 }

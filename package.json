@@ -11,6 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "concurrent": "^0.3.2",
-    "danfojs-node": "^1.1.2"
+    "nodejs-polars": "^0.18.0"
   }
 }

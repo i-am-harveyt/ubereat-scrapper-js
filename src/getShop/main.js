@@ -1,7 +1,8 @@
 import getNearShop from "./getNearShop.js";
-import { readCSV } from "danfojs-node";
+import { readCSV, concat } from "nodejs-polars";
 import { mkdirSync } from "fs";
 import { Logger } from "../lib/Logger.js";
+import concatRolling from "./concatRolling.js";
 
 const date = new Date();
 const TODAY = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
@@ -19,31 +20,24 @@ async function main() {
   }
 
   // read central location information
-  const centerStream = await readCSV("../../inputCentral/tw_points.csv", {
-    header: true,
-  });
-  let centerLst = centerStream.loc({
-    columns: ["newLat", "newLng"],
-  }).values;
-  const newAnchors = await readCSV(
+  const tw_points = readCSV("../../inputCentral/tw_points.csv").select([
+    "newLat",
+    "newLng",
+  ]);
+  const newAnchors = readCSV(
     "../../inputCentral/new_anchors_filtered.csv",
-    {
-      header: true,
-    },
-  );
-  centerLst = centerLst.concat(
-    newAnchors.loc({
-      columns: ["newLat", "newLng"],
-    }).values,
-  );
+  ).select(["newLat", "newLng"]);
+  const centerLst = concat([tw_points, newAnchors]);
 
-  for (const loc of centerLst) {
+  for (const row of centerLst.rows()) {
     try {
-      await getNearShop(TODAY, loc[0], loc[1], date.getDate() == 10, logger);
+      logger.info(`(${row[0]}, ${row[1]})`);
+      await getNearShop(TODAY, row[0], row[1], date.getDate() == 10, logger);
     } catch (e) {
       logger.error(e);
     }
   }
+  concatRolling(TODAY, logger);
 
   logger.log("down shop catch");
 }

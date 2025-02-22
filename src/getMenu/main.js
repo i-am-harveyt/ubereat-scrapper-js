@@ -1,8 +1,7 @@
 import getMenu from "./getMenu.js";
 import { Cookie } from "./Cookie.js";
-import { mkdirSync, readdirSync } from "fs";
-import { readCSV } from "danfojs-node";
-import { DataFrame } from "danfojs-node";
+import { mkdirSync, readdirSync, readvSync } from "fs";
+import { readCSV, DataFrame } from "nodejs-polars";
 import { Logger } from "../lib/Logger.js";
 
 const date = new Date();
@@ -17,65 +16,60 @@ async function main() {
     mkdirSync(PATH, { recursive: true });
   } catch (e) {}
 
-  // read shopinformation
-  const locationPath = `../../../uber_data/shopLst/${TODAY}`;
-  let locationLst = readdirSync(locationPath);
+  // read shop information
+  const rollingPath = `../../../uber_data/shopLst/rolling.csv`;
+  const rolling = readCSV(rollingPath).select([
+    "storeUuid",
+    "name",
+    "anchor_latitude",
+    "anchor_longitude",
+  ]);
   const menuPath = `../../../uber_data/uber_menu/${TODAY}`;
 
   // init cookie
   let cookie = new Cookie();
   cookie.init();
 
-  for (const location of locationLst) {
-    logger.info(location);
-    let stores = [];
-    let df = await readCSV(`${locationPath}/${location}`);
-    df = df.loc({
-      columns: ["storeUuid", "name", "anchor_latitude", "anchor_longitude"],
-    }).values;
-    logger.info(`(${df[0][2]}, ${df[0][3]}): ${df.length} shops`);
-    for (const row of df) {
-      logger.info(row);
-      try {
-        stores.push(
-          await getMenu(
-            cookie,
-            row[0],
-            row[1],
-            row[2],
-            row[3],
-            date.getDate() >= 10 && date.getDate() < 17,
-            logger,
-          ),
-        );
-      } catch (e) {
-        let cnt = 0;
-        while (cnt < 3) {
-          cnt += 1;
-          try {
-            stores.push(
-              await getMenu(
-                cookie,
-                row[0],
-                row[1],
-                row[2],
-                row[3],
-                date.getDate() >= 10 && date.getDate() < 17,
-              ),
-            );
-            break;
-          } catch (er) {
-            logger.error(er);
-          }
+  let stores = [];
+  for (const row of rolling.rows()) {
+    logger.info(row);
+    try {
+      stores.push(
+        await getMenu(
+          cookie,
+          row[0],
+          row[1],
+          row[2],
+          row[3],
+          date.getDate() >= 10 && date.getDate() < 17,
+          logger,
+        ),
+      );
+    } catch (e) {
+      let cnt = 0;
+      while (cnt < 3) {
+        cnt += 1;
+        try {
+          stores.push(
+            await getMenu(
+              cookie,
+              row[0],
+              row[1],
+              row[2],
+              row[3],
+              date.getDate() >= 10 && date.getDate() < 17,
+              logger,
+            ),
+          );
+          break;
+        } catch (er) {
+          logger.error(er);
         }
-        logger.error(e);
       }
+      logger.error(e);
     }
-    const result = new DataFrame(stores);
-    result.toCSV({
-      filePath: `${menuPath}/${location}_${TODAY}.csv`,
-      header: true,
-    });
+    const result = DataFrame(stores);
+    result.writeCSV(`${menuPath}/${TODAY}.csv`);
   }
 
   logger.info("down shop catch");
