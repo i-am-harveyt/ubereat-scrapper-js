@@ -35,6 +35,11 @@ export default async function getMenu(
   // fetch logic
   await new Promise((resolve) => setTimeout(resolve, Math.random() * 3000));
   try {
+    const today = `${now.getMonth() + 1}-${now.getDate()}`;
+    const jsonPath = `../../../uber_data/uber_menu/json/${today}`;
+    mkdirSync(jsonPath, { recursive: true });
+  } catch (e) {}
+  try {
     let response = await sendReqMenu(
       cookie,
       shopUuid,
@@ -44,12 +49,9 @@ export default async function getMenu(
     );
     const data = await response.json();
     // write to json
-    const today = `${now.getMonth() + 1}-${now.getDate()}`;
     if (storeJson) {
-      const jsonPath = `../../../uber_data/uber_menu/json/${today}`;
-      mkdirSync(jsonPath, { recursive: true });
       writeFileSync(
-        `${jsonPath}/${today}/${latitude}_${longitude}_${shopUuid}-${today}.json`,
+        `${jsonPath}/${latitude}_${longitude}_${shopUuid}-${today}.json`,
         JSON.stringify(data),
       );
     }
